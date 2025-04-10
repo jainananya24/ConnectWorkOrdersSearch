@@ -13,22 +13,26 @@ INPUT_LEN = 10
 MIN_YEAR = 2022
 
 # Excel download links
-file_links = {
-    "DHR-03000_Rev_K.xlsx": "https://drive.google.com/uc?export=download&id=1hr6Ac4nqTBLMjb95APwT3jWCqmnkVrJT",
-    "DHR-03000_Rev_J.xlsx": "https://drive.google.com/uc?export=download&id=1Jtxf3Kokk5FFcFHevoI4RjJWXjWSE-Fr",
-    "DHR-03000_Rev_H.xlsx": "https://drive.google.com/uc?export=download&id=1w9nR_YVLQApAYLIjdObUd1H9X_6xKUxC",
-    "DHR-03000_Rev_G.xlsx": "https://drive.google.com/uc?export=download&id=1MavRyVvbsjMQ5bLo3w-NDQWlUROF_Ryx",
-}
+FOLDER_PATH  = "connect_excel_files"
 
-# Download Excel files
 @st.cache_data
-def download_excel_files():
-    for file_name, url in file_links.items():
-        if not os.path.exists(file_name):
-            r = requests.get(url)
-            with open(file_name, 'wb') as f:
-                f.write(r.content)
-    return list(file_links.keys())
+def load_all_data(folder_path):
+    all_data = []
+    for file in os.listdir(folder_path):
+        if file.endswith(".xlsx"):
+            file_path = os.path.join(folder_path, file)
+            try:
+                df = pd.read_excel(file_path, engine="openpyxl")
+                df["Source File"] = file
+                all_data.append(df)
+            except Exception as e:
+                st.warning(f"Could not read {file}: {e}")
+    if all_data:
+        return pd.concat(all_data, ignore_index=True)
+    else:
+        return pd.DataFrame()
+        
+df_all = load_all_data(FOLDER_PATH)
 
 # Convert serial number to hex
 def int_to_hex(serial_num):
