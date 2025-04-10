@@ -13,26 +13,22 @@ INPUT_LEN = 10
 MIN_YEAR = 2022
 
 # Excel download links
-FOLDER_PATH  = "connect_excel_files"
+file_links = {
+            "DHR-03000_Rev_K.xlsx": "https://github.com/jainananya24/ConnectWorkOrdersSearch/blob/main/DHR-03000%20Rev%20K%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(15).xlsx",
+            "DHR-03000_Rev_J.xlsx": "https://github.com/jainananya24/ConnectWorkOrdersSearch/blob/main/DHR-03000%20Rev%20J%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(24)%20(1).xlsx",
+            "DHR-03000_Rev_H.xlsx": "https://github.com/jainananya24/ConnectWorkOrdersSearch/blob/main/DHR-03000%20Rev%20H%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(15)%20(1).xlsx",
+            "DHR-03000_Rev_G.xlsx": "https://github.com/jainananya24/ConnectWorkOrdersSearch/blob/main/DHR-03000%20Rev%20G%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(10)%20(1).xlsx",
+}
 
+# Download Excel files
 @st.cache_data
-def load_all_data(folder_path):
-    all_data = []
-    for file in os.listdir(folder_path):
-        if file.endswith(".xlsx"):
-            file_path = os.path.join(folder_path, file)
-            try:
-                df = pd.read_excel(file_path, engine="openpyxl")
-                df["Source File"] = file
-                all_data.append(df)
-            except Exception as e:
-                st.warning(f"Could not read {file}: {e}")
-    if all_data:
-        return pd.concat(all_data, ignore_index=True)
-    else:
-        return pd.DataFrame()
-        
-df_all = load_all_data(FOLDER_PATH)
+def download_excel_files():
+    for file_name, url in file_links.items():
+        if not os.path.exists(file_name):
+            r = requests.get(url)
+            with open(file_name, 'wb') as f:
+                f.write(r.content)
+    return list(file_links.keys())
 
 # Convert serial number to hex
 def int_to_hex(serial_num):
