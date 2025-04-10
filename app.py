@@ -4,6 +4,23 @@ import os
 import datetime
 import requests
 
+import io
+
+@st.cache_data
+def download_excel_files():
+    dataframes = []
+    for file_name, url in file_links.items():
+        try:
+            r = requests.get(url)
+            r.raise_for_status()
+            df = pd.read_excel(io.BytesIO(r.content), engine="openpyxl")
+            df.columns = df.columns.str.strip()
+            df["Source File"] = file_name
+            dataframes.append(df)
+        except Exception as e:
+            st.warning(f"Could not read {file_name}: {e}")
+    return dataframes
+
 # Constants
 START_DATE = datetime.date(2020, 1, 1)
 DATE_BITS = 16
@@ -65,25 +82,20 @@ def hex_to_int(hex_str):
     return serial_date_str + unit_id
 
 # Search Excel files for work order and operator name
-def get_work_order_and_operator(serial_number, file_paths):
+def get_work_order_and_operator(serial_number, dataframes):
     results = {"Work Order": "Not available", "Operator": "Not available"}
-    for file in file_paths:
-        try:
-            df = pd.read_excel(file)
-            df.columns = df.columns.str.strip()
-
-            if 'Serial Number' not in df.columns or "Operator's Full Name" not in df.columns or 'Work Order Number' not in df.columns:
-                continue
-
-            df['Serial Number'] = df['Serial Number'].astype(str).str.strip()
-            match = df[df['Serial Number'] == serial_number]
-            if not match.empty:
-                results["Work Order"] = match['Work Order Number'].values[0]
-                results["Operator"] = match["Operator's Full Name"].values[0]
-                break
-        except Exception as e:
+    for df in dataframes:
+        if 'Serial Number' not in df.columns or "Operator's Full Name" not in df.columns or 'Work Order Number' not in df.columns:
             continue
+
+        df['Serial Number'] = df['Serial Number'].astype(str).str.strip()
+        match = df[df['Serial Number'] == serial_number]
+        if not match.empty:
+            results["Work Order"] = match['Work Order Number'].values[0]
+            results["Operator"] = match["Operator's Full Name"].values[0]
+            break
     return results
+
 
 # Detect input type and process
 def process_input(user_input):
@@ -94,8 +106,8 @@ def process_input(user_input):
         hex_val = user_input
         serial = hex_to_int(hex_val)
 
-    file_paths = download_excel_files()
-    info = get_work_order_and_operator(serial, file_paths)
+    dataframes = download_excel_files()
+    info = get_work_order_and_operator(serial, dataframes)
 
     if info["Work Order"] >= "W1243":
         pcba = "PCBA used is a Rev B* or C."
