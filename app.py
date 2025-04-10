@@ -14,10 +14,11 @@ MIN_YEAR = 2022
 
 # Excel download links
 file_links = {
-            "DHR-03000_Rev_K.xlsx": "https://github.com/jainananya24/ConnectWorkOrdersSearch/blob/main/DHR-03000%20Rev%20K%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(15).xlsx",
-            "DHR-03000_Rev_J.xlsx": "https://github.com/jainananya24/ConnectWorkOrdersSearch/blob/main/DHR-03000%20Rev%20J%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(24)%20(1).xlsx",
-            "DHR-03000_Rev_H.xlsx": "https://github.com/jainananya24/ConnectWorkOrdersSearch/blob/main/DHR-03000%20Rev%20H%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(15)%20(1).xlsx",
-            "DHR-03000_Rev_G.xlsx": "https://github.com/jainananya24/ConnectWorkOrdersSearch/blob/main/DHR-03000%20Rev%20G%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(10)%20(1).xlsx",
+    "DHR-03000_Rev_K.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/DHR-03000%20Rev%20K%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(15).xlsx",
+    "DHR-03000_Rev_J.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/DHR-03000%20Rev%20J%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(24)%20(1).xlsx",
+    "DHR-03000_Rev_H.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/DHR-03000%20Rev%20H%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(15)%20(1).xlsx",
+    "DHR-03000_Rev_G.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/DHR-03000%20Rev%20G%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(10)%20(1).xlsx",
+
 }
 
 # Download Excel files
