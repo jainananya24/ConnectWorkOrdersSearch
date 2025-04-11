@@ -117,5 +117,4 @@ if st.button("Convert and Search"):
             st.error(f"Error: {e}")
 
 st.markdown("---")
-st.caption("For internal use only")
-st.caption("Avive Solutions, Inc")
+
