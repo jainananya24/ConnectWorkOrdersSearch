@@ -99,6 +99,7 @@ def process_input(user_input):
 
 # --- Streamlit App ---
 st.title("🔎 Serial Number ↔ Hex Converter & Info Finder")
+st.title("Only works for Connects Build at Avive")
 
 user_input = st.text_input("Enter Serial Number (10 digits) or Hexadecimal (8 chars):")
 
