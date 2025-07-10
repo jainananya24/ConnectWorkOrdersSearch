@@ -118,4 +118,20 @@ if st.button("Convert and Search"):
             st.error(f"Error: {e}")
 
 st.markdown("---")
-
+# --- App Description and Instructions ---
+with st.expander("ℹ️ About this App & How to Use"):
+    st.markdown("""
+        **What does this app do?**
+        
+        This tool is designed for Avive Connect devices to perform three key functions:
+        - **Convert IDs:** It can convert a 10-digit serial number to its 8-character hex value, and vice-versa.
+        - **Find Manufacturing Data:** It searches through Device History Records (DHRs) to find the Work Order and Operator name associated with a serial number.
+        - **Check PCBA Revision:** It automatically determines the likely PCBA revision based on the work order.
+    """)
+    st.markdown("""
+        **How to use it:**
+        
+        1.  Enter a valid 10-digit serial number (e.g., `2301150001`) or an 8-character hexadecimal string into the input box.
+        2.  Click the **"Convert and Search"** button.
+        3.  The results, including the converted value and any found manufacturing information, will be displayed.
+    """)
