@@ -18,6 +18,14 @@ file_links = {
     "DHR-03000_Rev_J.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/DHR-03000%20Rev%20J%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(24)%20(1).xlsx",
     "DHR-03000_Rev_H.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/DHR-03000%20Rev%20H%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(15)%20(1).xlsx",
     "DHR-03000_Rev_G.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/DHR-03000%20Rev%20G%20Electronic%20DHR%20for%20Avive%20Connect%20Responses%20(10)%20(1).xlsx",
+    "STM-03002_Rev_S.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/STM-03002%20Rev%20S%20Electronic%20Data%20Collection%20Form%20%28Responses%29.xlsx",
+    "STM-03002_Rev_R.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/STM-03002%20Rev%20R%20Electronic%20Data%20Collection%20Form%20%28Responses%29.xlsx",
+    "STM-03002_Rev_Q.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/STM-03002%20Rev%20Q%20Electronic%20Data%20Collection%20Form%20%28Responses%29.xlsx",
+    "STM-03002_Rev_P.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/STM-03002%20Rev%20P%20Electronic%20Data%20Collection%20Form%20%28Responses%29.xlsx",
+    "STM-03002_Rev_M.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/STM-03002%20Rev%20M%20electronic%20data%20collection%20form%20Responses.xlsx",
+    "STM-03002_Rev_L.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/STM-03002%20Rev%20L%20%20electronic%20data%20collection%20form.xlsx",
+    "STM-03002_Rev_K.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/STM-03002%20Rev%20K%20%20electronic%20data%20collection%20form%20Responses.xlsx",
+    "STM-03002_Rev_J.xlsx": "https://raw.githubusercontent.com/jainananya24/ConnectWorkOrdersSearch/main/STM-03002%20Rev%20J%20electronic%20data%20collection%20form%20Responses.xlsx",
 }
 
 # Download and load Excel files into memory
@@ -28,8 +36,25 @@ def download_excel_files():
         try:
             r = requests.get(url)
             r.raise_for_status()
-            df = pd.read_excel(io.BytesIO(r.content), engine="openpyxl")
-            df.columns = df.columns.str.strip()
+            df = pd.read_excel(io.BytesIO(r.content), engine="openpyxl", header=None)
+            
+            # Find the header row dynamically
+            header_idx = 0
+            for i, row in df.iterrows():
+                row_list = [str(x).strip().lower() for x in row.tolist()]
+                if any('serial' in str(x) for x in row_list):
+                    header_idx = i
+                    break
+            
+            # Set the header and slice the dataframe
+            df.columns = df.iloc[header_idx]
+            df = df.iloc[header_idx + 1:].reset_index(drop=True)
+            df.columns = df.columns.astype(str).str.strip()
+            
+            # Align "Operator's Name" to "Operator's Full Name" if necessary
+            if "Operator's Name" in df.columns and "Operator's Full Name" not in df.columns:
+                df.rename(columns={"Operator's Name": "Operator's Full Name"}, inplace=True)
+                
             df["Source File"] = file_name
             dataframes.append(df)
         except Exception as e:
@@ -65,24 +90,47 @@ def hex_to_int(hex_str):
 
 # Search work order and operator
 def get_work_order_and_operator(serial_number, dataframes):
-    results = {"Work Order": "Not available", "Operator": "Not available"}
+    work_orders = []
+    operators = []
     for df in dataframes:
         if 'Serial Number' not in df.columns or "Operator's Full Name" not in df.columns or 'Work Order Number' not in df.columns:
             continue
-        df['Serial Number'] = df['Serial Number'].astype(str).str.strip()
+        # Handle decimal (.0) that may come from floating point values in excel
+        df['Serial Number'] = df['Serial Number'].astype(str).str.strip().str.replace(r'\.0$', '', regex=True)
         match = df[df['Serial Number'] == serial_number]
-        if not match.empty:
-            results["Work Order"] = match['Work Order Number'].values[0]
-            results["Operator"] = match["Operator's Full Name"].values[0]
-            break
+        
+        for _, row in match.iterrows():
+            wo = str(row['Work Order Number']).strip()
+            op = str(row["Operator's Full Name"]).strip()
+            if wo != 'nan' and wo not in work_orders:
+                work_orders.append(wo)
+            if op != 'nan' and op not in operators:
+                operators.append(op)
+                
+    results = {
+        "Work Order": ", ".join(work_orders) if work_orders else "Not available",
+        "Operator": ", ".join(operators) if operators else "Not available"
+    }
     return results
 
 # Determine PCBA revision from work order
-def get_pcba_revision(work_order):
-    if work_order >= "W1243":
-        return "PCBA used is a Rev B* or C."
-    else:
-        return "PCBA used is Rev B or A."
+def get_pcba_revision(work_order_str):
+    if work_order_str == "Not available":
+        return "PCBA revision not available."
+    
+    work_orders = [wo.strip() for wo in work_order_str.split(",")]
+    revisions = []
+    for wo in work_orders:
+        if wo >= "W1243":
+            revisions.append(f"{wo}: PCBA used is a Rev B* or C.")
+        else:
+            revisions.append(f"{wo}: PCBA used is Rev B or A.")
+            
+    # deduplicate and formatting
+    if len(revisions) == 1:
+        return revisions[0].split(": ")[1]  # Return just the revision if only 1 work order
+    
+    return " | ".join(revisions)
 
 # Process user input
 def process_input(user_input):
